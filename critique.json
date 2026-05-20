@@ -1,0 +1,26 @@
+{
+  "kind": "critique-panel",
+  "score": 4.4,
+  "axes": {
+    "clarity": {
+      "score": 5,
+      "notes": "A primeira tela entrega busca, perfil, semaforo, recomendacoes e explicacao sem depender de uma landing page."
+    },
+    "hierarchy": {
+      "score": 4,
+      "notes": "O semaforo domina a leitura, seguido por metricas e acoes praticas. Timeline e previsao ficam como suporte."
+    },
+    "typography": {
+      "score": 4,
+      "notes": "Escala clara, numeros tabulares e texto de apoio curto. O display evita excesso ornamental."
+    },
+    "motion": {
+      "score": 4,
+      "notes": "Skeleton, hover e pulso de risco sao sutis e preservam acessibilidade com reduced motion."
+    },
+    "brand": {
+      "score": 5,
+      "notes": "Sistema visual calmo de saude publica, com acentos variados para risco sem dominar com roxo, azul escuro ou bege."
+    }
+  }
+}
