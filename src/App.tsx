@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { HeartPulse } from 'lucide-react';
+import { HeartPulse, Moon, Sun } from 'lucide-react';
 import { fetchClimaCuidaData } from './api/openMeteo';
 import { ErrorBanner } from './components/ErrorBanner';
 import { Forecast7Days } from './components/Forecast7Days';
@@ -16,10 +16,12 @@ import { calculateRiskScore } from './lib/riskScore';
 import type { LocationOption, ProfileId, WeatherBundle } from './types';
 
 const STORAGE_KEY = 'clima-cuida-preferences';
+type ThemeMode = 'light' | 'dark';
 
 interface StoredPreferences {
   profile?: ProfileId;
   location?: LocationOption;
+  theme?: ThemeMode;
 }
 
 function loadPreferences(): StoredPreferences {
@@ -42,6 +44,7 @@ function savePreferences(preferences: StoredPreferences) {
 export default function App() {
   const initialPreferences = useMemo(() => loadPreferences(), []);
   const [profile, setProfile] = useState<ProfileId>(initialPreferences.profile ?? 'adult');
+  const [theme, setTheme] = useState<ThemeMode>(initialPreferences.theme ?? 'light');
   const [activeLocation, setActiveLocation] = useState<LocationOption>(
     initialPreferences.location ?? MOCK_WEATHER.location,
   );
@@ -51,6 +54,7 @@ export default function App() {
 
   const selectedProfile = USE_PROFILES.find((item) => item.id === profile) ?? USE_PROFILES[0];
   const risk = useMemo(() => calculateRiskScore(weather.current, profile), [profile, weather.current]);
+  const isDarkTheme = theme === 'dark';
 
   const loadWeather = useCallback(
     async (location: LocationOption) => {
@@ -60,19 +64,19 @@ export default function App() {
         const nextWeather = await fetchClimaCuidaData(location);
         setWeather(nextWeather);
         setActiveLocation(location);
-        savePreferences({ profile, location });
+        savePreferences({ profile, location, theme });
       } catch {
         setWeather({
           ...MOCK_WEATHER,
           fetchedAt: new Date().toISOString(),
           source: 'mock',
         });
-        setError('A API não respondeu agora. Exibindo dados de exemplo para manter a leitura do dia utilizável.');
+        setError('A API nao respondeu agora. Exibindo dados de exemplo para manter a leitura do dia utilizavel.');
       } finally {
         setIsLoading(false);
       }
     },
-    [profile],
+    [profile, theme],
   );
 
   useEffect(() => {
@@ -80,16 +84,24 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    savePreferences({ profile, location: activeLocation });
-  }, [profile, activeLocation]);
+    document.documentElement.dataset.theme = theme;
+  }, [theme]);
+
+  useEffect(() => {
+    savePreferences({ profile, location: activeLocation, theme });
+  }, [profile, activeLocation, theme]);
 
   function handleProfileChange(nextProfile: ProfileId) {
     setProfile(nextProfile);
   }
 
+  function handleToggleTheme() {
+    setTheme((currentTheme) => (currentTheme === 'light' ? 'dark' : 'light'));
+  }
+
   function handleUseCurrentLocation() {
     if (!navigator.geolocation) {
-      setError('Este navegador não oferece geolocalização. Busque uma cidade pelo nome.');
+      setError('Este navegador nao oferece geolocalizacao. Busque uma cidade pelo nome.');
       return;
     }
 
@@ -98,7 +110,7 @@ export default function App() {
       (position) => {
         const location: LocationOption = {
           id: 'browser-location',
-          name: 'Sua localização',
+          name: 'Sua localizacao',
           latitude: position.coords.latitude,
           longitude: position.coords.longitude,
         };
@@ -106,7 +118,7 @@ export default function App() {
       },
       () => {
         setIsLoading(false);
-        setError('Não foi possível acessar sua localização. Você pode pesquisar uma cidade manualmente.');
+        setError('Nao foi possivel acessar sua localizacao. Voce pode pesquisar uma cidade manualmente.');
       },
       { enableHighAccuracy: false, timeout: 9000, maximumAge: 10 * 60 * 1000 },
     );
@@ -127,16 +139,27 @@ export default function App() {
           onSelectLocation={loadWeather}
           onUseCurrentLocation={handleUseCurrentLocation}
         />
-        <ProfileSelector profiles={USE_PROFILES} value={profile} onChange={handleProfileChange} />
+        <div className="topbar-actions">
+          <button
+            className="theme-toggle"
+            type="button"
+            aria-label={isDarkTheme ? 'Ativar modo claro' : 'Ativar modo escuro'}
+            onClick={handleToggleTheme}
+          >
+            {isDarkTheme ? <Sun size={17} aria-hidden="true" /> : <Moon size={17} aria-hidden="true" />}
+            <span>{isDarkTheme ? 'Modo Claro' : 'Modo Escuro'}</span>
+          </button>
+          <ProfileSelector profiles={USE_PROFILES} value={profile} onChange={handleProfileChange} />
+        </div>
       </header>
 
       <main className="dashboard-shell" aria-busy={isLoading}>
         {error && <ErrorBanner message={error} onRetry={() => loadWeather(activeLocation)} />}
         <div className="dashboard-intro">
-          <p className="eyebrow">Orientação geral, não recomendação médica</p>
+          <p className="eyebrow">Orientacao geral, nao recomendacao medica</p>
           <p>
-            Leitura combinada de clima, UV e qualidade do ar para decidir saída, exercício, deslocamento
-            e proteção diária.
+            Leitura combinada de clima, UV e qualidade do ar para decidir saida, exercicio, deslocamento
+            e protecao diaria.
           </p>
         </div>
 
