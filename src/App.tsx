@@ -71,7 +71,7 @@ export default function App() {
           fetchedAt: new Date().toISOString(),
           source: 'mock',
         });
-        setError('A API nao respondeu agora. Exibindo dados de exemplo para manter a leitura do dia utilizavel.');
+        setError('A API não respondeu agora. Exibindo dados de exemplo para manter a leitura do dia utilizável.');
       } finally {
         setIsLoading(false);
       }
@@ -101,7 +101,7 @@ export default function App() {
 
   function handleUseCurrentLocation() {
     if (!navigator.geolocation) {
-      setError('Este navegador nao oferece geolocalizacao. Busque uma cidade pelo nome.');
+      setError('Este navegador não oferece geolocalização. Busque uma cidade pelo nome.');
       return;
     }
 
@@ -110,7 +110,7 @@ export default function App() {
       (position) => {
         const location: LocationOption = {
           id: 'browser-location',
-          name: 'Sua localizacao',
+          name: 'Sua localização',
           latitude: position.coords.latitude,
           longitude: position.coords.longitude,
         };
@@ -118,7 +118,7 @@ export default function App() {
       },
       () => {
         setIsLoading(false);
-        setError('Nao foi possivel acessar sua localizacao. Voce pode pesquisar uma cidade manualmente.');
+        setError('Não foi possível acessar sua localização. Você pode pesquisar uma cidade manualmente.');
       },
       { enableHighAccuracy: false, timeout: 9000, maximumAge: 10 * 60 * 1000 },
     );
@@ -156,10 +156,10 @@ export default function App() {
       <main className="dashboard-shell" aria-busy={isLoading}>
         {error && <ErrorBanner message={error} onRetry={() => loadWeather(activeLocation)} />}
         <div className="dashboard-intro">
-          <p className="eyebrow">Orientacao geral, nao recomendacao medica</p>
+          <p className="eyebrow">Orientação geral, não recomendação médica</p>
           <p>
-            Leitura combinada de clima, UV e qualidade do ar para decidir saida, exercicio, deslocamento
-            e protecao diaria.
+            Leitura combinada de clima, UV e qualidade do ar para decidir saída, exercício, deslocamento
+            e proteção diária.
           </p>
         </div>
 
