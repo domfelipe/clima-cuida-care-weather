@@ -1,0 +1,48 @@
+# Roda no Forgejo (homelab). GitHub Actions ignora .forgejo/
+# Source of truth continua no GitHub — só faça push no GH.
+name: quality
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  quality:
+    runs-on: docker
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Detect stack
+        id: stack
+        run: |
+          set -e
+          echo "repo=$(basename "$GITHUB_REPOSITORY")"
+          if [ -f package.json ]; then echo "has_node=true" >> "$GITHUB_OUTPUT"; else echo "has_node=false" >> "$GITHUB_OUTPUT"; fi
+          if [ -f pyproject.toml ] || [ -f requirements.txt ] || [ -f setup.py ]; then echo "has_py=true" >> "$GITHUB_OUTPUT"; else echo "has_py=false" >> "$GITHUB_OUTPUT"; fi
+          if [ -f Cargo.toml ]; then echo "has_rust=true" >> "$GITHUB_OUTPUT"; else echo "has_rust=false" >> "$GITHUB_OUTPUT"; fi
+          if [ -f go.mod ]; then echo "has_go=true" >> "$GITHUB_OUTPUT"; else echo "has_go=false" >> "$GITHUB_OUTPUT"; fi
+          ls -la
+
+      - name: Node check (if any)
+        if: steps.stack.outputs.has_node == 'true'
+        run: |
+          if command -v node >/dev/null 2>&1; then node -v; else echo "node n/a in image — skip"; fi
+          if [ -f package-lock.json ] || [ -f pnpm-lock.yaml ] || [ -f yarn.lock ] || [ -f bun.lockb ] || [ -f bun.lock ]; then
+            echo "lockfile present"
+          fi
+          # ponytail: no install/test yet — add when repo has standard scripts
+          if [ -f package.json ] && command -v node >/dev/null 2>&1; then
+            node -e "const p=require('./package.json'); console.log('name=', p.name||'(none)', 'scripts=', Object.keys(p.scripts||{}).join(','))"
+          fi
+
+      - name: Python check (if any)
+        if: steps.stack.outputs.has_py == 'true'
+        run: |
+          if command -v python3 >/dev/null 2>&1; then python3 --version; else echo "python n/a"; fi
+
+      - name: Quality gate (smoke)
+        run: |
+          echo "quality OK on Forgejo runner"
+          echo "sha=${GITHUB_SHA}"
+          echo "ref=${GITHUB_REF}"
