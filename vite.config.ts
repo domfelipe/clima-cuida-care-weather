@@ -2,7 +2,7 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
 export default defineConfig(({ command }) => ({
-  base: command === 'build' ? '/clima-cuida-care-weather/' : '/',
+  base: command === 'build' ? '/clima-cuida-care-weather-fork/' : '/',
   plugins: [react()],
   test: {
     environment: 'node',
